@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import logging
+# from pprint import pprint
 import os
+import shutil
 import sys
+import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
+import requests
 from PyQt5.QtCore import QCoreApplication, QDate, QSettings, QTimer, QTime, Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from selenium import webdriver
@@ -13,20 +17,20 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-
 from modules.Appointment_thread import AppointmentPage
 from modules.open_checkboxs import CheckBoxWindow
 from modules.open_version_log import LogWindow
+# from modules.time_sync import sync_windows_time
 from ui_source.badminton_window import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(
-        self,
+            self,
     ):  # 标准的__init__方法，parent=None表示没有父类，args=None表示没有参数，macros=None表示没有宏
         super().__init__()  # 调用父类的__init__方法，super(MyDisplay, self)表示调用父类的__init__方法，parent=parent, args=args, macros=macros表示传入参数
         self.setupUi(self)
-        self.setWindowTitle("Badminton Beta V2.7.4")
+        self.setWindowTitle("Badminton Beta V3.0")
         self.init_size()
         self.log_init()
 
@@ -61,8 +65,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_5.clicked.connect(self.show_saved_message)
 
         self.time_window = None
-        # self.pushButton_4.clicked.connect(self.show_time_website)
-        self.pushButton_4.clicked.connect(self.show_time_website)
+        # self.pushButton_4.clicked.connect(self.update_webdriver)
+        self.pushButton_4.clicked.connect(self.update_webdriver)
 
         # self.pushButton_4.clicked.connect(self.apply_default_settings)
         self.comboBox.currentIndexChanged.connect(self.on_combobox_changed)
@@ -73,12 +77,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_window = LogWindow()
         self.pushButton_7.clicked.connect(self.open_version_log)
 
+        self.webdriver_version = "129.0.6668.70"
+
     def init_size(self):
         # 获取屏幕的几何信息
         screen_geometry = QCoreApplication.instance().desktop().availableGeometry()
 
         # 设置窗口的大小为屏幕的80%
-        width = int(screen_geometry.width() * 0.23)
+        width = int(screen_geometry.width() * 0.2)
         height = int(screen_geometry.height() * 0.6)
         self.resize(width, height)
 
@@ -136,7 +142,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setting1.setValue("default_time2", self.comboBox_2.currentText())
         self.setting1.setValue("default_time3", self.comboBox_8.currentText())
 
-        # self.setting1.setValue('default_check',self.checkBox_2.isChecked())
+        self.setting1.setValue("webdriver_version", self.webdriver_version)
+
+        self.setting1.setValue('hide_web1', self.checkBox_1.isChecked())
 
     def save_default_settings_2(self):
         # 将默认值保存到设置中
@@ -163,7 +171,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setting2.setValue("default_time22", self.comboBox_2.currentText())
         self.setting2.setValue("default_time32", self.comboBox_8.currentText())
 
-        # self.setting2.setValue('default_check2',self.checkBox_2.isChecked())
+        self.setting2.setValue("webdriver_version", self.webdriver_version)
+        self.setting2.setValue('hide_web12', self.checkBox_1.isChecked())
 
     def save_default_settings(self):
         if self.comboBox.currentText() == "1":
@@ -192,6 +201,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_time21 = self.setting1.value("default_time2", "")
         default_time31 = self.setting1.value("default_time3", "")
 
+        self.webdriver_version = self.setting1.value("webdriver_version", "")
+        self.checkBox_1.setChecked(self.setting1.value('hide_web1', "", type=bool))
         # default_check = self.setting1.value('default_check', False, type=bool)
 
         self.lineEdit.setText(default_account1)
@@ -236,6 +247,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_time22 = self.setting2.value("default_time22", "")
         default_time32 = self.setting2.value("default_time32", "")
 
+        self.webdriver_version = self.setting2.value("webdriver_version", "")
+        self.checkBox_1.setChecked(self.setting2.value('hide_web12', "", type=bool))
         # default_check2 = self.setting2.value('default_check2', False, type=bool)
 
         self.lineEdit.setText(default_account2)
@@ -369,13 +382,81 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # self.driver.find_element(By.XPATH, '//*[@id="advancedSearch"]/span').click()
 
-    def show_time_website(self):
-        self.driver_time = self.judge_brower()
-        if self.driver_time is None:
-            return
-        url = "https://time.is"
-        self.driver_time.get(url)
-        self.driver_time.implicitly_wait(5)
+    def update_webdriver(self):
+
+        # JSON文件的URL，通常是直接的下载链接
+        json_url = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
+
+        # 发送GET请求获取JSON文件内容
+        response = requests.get(json_url, allow_redirects=True)
+
+        # 检查请求是否成功
+        if response.status_code == 200:
+            url = response.json()["channels"]["Stable"]["downloads"]["chromedriver"][-1]["url"]  # -1 表示win64平台
+            version_num = url.split("/")[-3]
+            # pprint(url)
+            # pprint("version: " + version_num)
+
+            self.webdriver_version = self.setting1.value("webdriver_version", "")
+            # 弹出消息框
+            self.msg.setIcon(QMessageBox.Information)
+            self.msg.setWindowTitle("information")
+            self.msg.setText(
+                "当前浏览器driver版本为:{}\n最新浏览器driver版本为:{}".format(self.webdriver_version, version_num))
+
+            self.msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+
+            # 如果点击ok
+            if self.msg.exec_() == QMessageBox.Ok:
+
+                # 设置自定义请求头（可选）
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+                }
+                # 发送请求
+                response = requests.get(url, headers=headers)
+                # 检查请求是否成功
+                if response.status_code == 200:
+                    # 保存文件
+                    with open('chromedriver.zip', 'wb') as f:
+                        f.write(response.content)
+                    # print("download success")
+
+                    # 对zip文件进行解压操作
+
+                    with zipfile.ZipFile('chromedriver.zip', 'r') as zip_ref:
+                        zip_ref.extractall('.')
+                    # print("extract success")
+
+                    # 将解压后的chromedriver.exe文件移动到上一级目录
+                    os.chdir('chromedriver-win64')
+                    shutil.move('chromedriver.exe', '..\\chromedriver.exe')
+                    # print("move success")
+
+                    os.chdir('..')
+                    os.remove('chromedriver.zip')
+                    shutil.rmtree('chromedriver-win64')
+                    # print("delete success")
+                    self.webdriver_version = version_num
+                    self.setting1.setValue("webdriver_version", self.webdriver_version)
+                    # 弹出消息框
+                    self.msg.setIcon(QMessageBox.Information)
+                    self.msg.setWindowTitle("information")
+                    self.msg.setText("webdriver更新成功！\n当前浏览器driver版本为: " + self.webdriver_version)
+                    self.msg.setStandardButtons(QMessageBox.Ok)
+                    self.msg.exec_()
+                else:
+                    # print("下载chromedriver.zip 失败")
+                    self.msg.setIcon(QMessageBox.Information)
+                    self.msg.setWindowTitle("information")
+                    self.msg.setText(f"下载失败，状态码: {response.status_code}")
+                    self.msg.setStandardButtons(QMessageBox.Ok)
+                    self.msg.exec_()
+        else:
+            self.msg.setIcon(QMessageBox.Information)
+            self.msg.setWindowTitle("information")
+            self.msg.setText(f"下载失败，状态码: {response.status_code}")
+            self.msg.setStandardButtons(QMessageBox.Ok)
 
     def set_combobox_options(self, date):
         day_of_week = (
@@ -459,7 +540,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         with ThreadPoolExecutor(max_workers=4) as executor:  # 使用线程池，最大线程数为3
             for index, (combo_box, combobox2, key) in enumerate(
-                zip(combobox_list_time, combobox_list_num, keys)
+                    zip(combobox_list_time, combobox_list_num, keys)
             ):  # 这里方法非常巧妙，使用了zip()方法，将多个列表的元素一一对应起来，然后使用enumerate()方法，将列表的索引和元素一一对应起来
                 value = combo_box.currentText()  # 获取comboBox的当前选项，使用方法currentText()
                 num = combobox2.currentText()  # 获取comboBox的当前选项，使用方法currentText()
@@ -560,6 +641,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #     y = int((screen_geometry.height() - window_geometry.height()) / 2)
     #     self.setGeometry(QRect(x, y, window_geometry.width(), window_geometry.height()))
     def log_init(self):
+        os.path.join(os.getcwd(), "error.log")
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.ERROR)
         handler = logging.FileHandler("error.log")

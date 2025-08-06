@@ -1,7 +1,9 @@
-from datetime import datetime
 import time
-import sys
+from datetime import datetime
+
+import requests
 from PyQt5.QtCore import QThread, pyqtSignal, QTime
+from pytz import timezone, utc
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.service import Service
@@ -42,7 +44,7 @@ class AppointmentPage(QThread):
         self.account = parent.lineEdit.text()
         self.password = parent.lineEdit_2.text()
 
-        self.field_type = 1
+        self.field_type = 3 # 1表示羽毛球场地， 3表示网球场地
 
         self.date = parent.dateEdit.text()
 
@@ -70,9 +72,10 @@ class AppointmentPage(QThread):
         if self.timeerror:
             self.timeEdit_3 = parent.bug_windows.timeEdit_3
         self.twice_clicked = parent.bug_windows.checkBox_2.isChecked()
-        self.old_clicked = parent.bug_windows.checkBox_3.isChecked()
+        # self.old_clicked = parent.bug_windows.checkBox_3.isChecked() # 旧式点击策略是错误，具体可以看badminton_v2中的代码
         self.quit_flag = parent.bug_windows.checkBox_4.isChecked()
-
+        self.server_time_flag = parent.bug_windows.checkBox_5.isChecked()
+        self.timeEdit_4 = parent.bug_windows.timeEdit_4
         self.driver = None
         self.url = "https://oa.shanghaitech.edu.cn/workflow/request/AddRequest.jsp?workflowid=14862&t_s=1648003625917&amp_sec_version_=1&gid_=dHArWDUwc2pjeWJMRlk3RlhKaEJoaG1vbmI3VE9PeE03Z1dGSlFVazIxWDVwcE9Zcnk5a2pIazdtTGM2eHFIVFRPS3NFNmVMYmIrRWNWUG1TZlg5RFE9PQ&EMAP_LANG=zh&THEME=cherry"
         # self.fail_flag = parent.checkBox_2.isChecked()
@@ -268,18 +271,23 @@ class AppointmentPage(QThread):
             By.CSS_SELECTOR, '[id^="CustomTree_"][id$="_a"]'
         )  # 定位元素，以'CustomTree_'开头，'_span'结尾的css_selector的元素。
 
-        # 选择场地号
+         # 通配符匹配场地类型
         time.sleep(3)
         found_element = None
-        # 选择场地号
-        element_name = "羽毛球场地{}号".format(field)
         for element in elements[3:9]:
-            # print(element.get_attribute("title"))
-            if element.get_attribute("title") == element_name:
+            title = element.get_attribute("title")
+            if title and "场" in title and str(field) in title:
                 found_element = element
                 break
         if found_element is None:
-            found_element = elements[3]  # 默认选择第一个场地
+            # 兜底：只要有“场”字的都可以
+            for element in elements[3:9]:
+                title = element.get_attribute("title")
+                if title and "场" in title:
+                    found_element = element
+                    break
+        if found_element is None:
+            found_element = elements[3]  # 还找不到就默认第一个
 
         found_element.click()
 
@@ -322,6 +330,21 @@ class AppointmentPage(QThread):
         finally:
             self.finished.emit()
 
+    def get_server_time(self):
+        try:
+            response = requests.head(self.url, timeout=10)
+            server_time_str = response.headers.get("Date")  # string
+
+        except requests.RequestException as e:
+            print(f"Error fetching server time: {e}")
+        else:
+            server_time = datetime.strptime(server_time_str, "%a, %d %b %Y %H:%M:%S %Z")
+            server_time = server_time.replace(tzinfo=utc)
+            local_tz = timezone("Asia/Shanghai")
+            server_time = server_time.astimezone(local_tz)
+
+            return server_time.time()
+
     def appoint(self):
         self.driver = self.start_driver()
         self.driver.get(
@@ -337,7 +360,6 @@ class AppointmentPage(QThread):
         self.fill_form(
             self.join_num, self.person_id, self.person_response, self.person_tel
         )
-
         current_time = (
             QTime.currentTime()
         )  # 使用QTIme获取时间，我推荐在QT中使用QTime而不是datetime.now()
@@ -367,45 +389,38 @@ class AppointmentPage(QThread):
             start_time_tmp = QTime(hour_start, minute_start, second_start)
             current_time = QTime.currentTime()
             # 如果当前时间未到达start_time_tmp，则等待
-            while current_time < start_time_tmp:
-                current_time = QTime.currentTime()
-                time.sleep(0.2)
+            if current_time < start_time_tmp:
+                # current_time = QTime.currentTime()
+                sleep_time = current_time.secsTo(start_time_tmp)
+                # print("sleep_time:", sleep_time)
+                time.sleep(sleep_time)
+
+        if self.server_time_flag:
+            server_time = self.get_server_time()
+            # print("server_time:", server_time)
+            time_temp = self.timeEdit_4.time()
+            # print("time_temp:", time_temp)
+            while server_time < time_temp:
+                # print("server_time:", server_time)
+                server_time = self.get_server_time()
+                time.sleep(0.4)
 
         if self.commit:
-            if not self.old_clicked:
-                # 新的点击方法
-                while True:
-                    try:
-                        # 等待元素可见
-                        self.driver.implicitly_wait(0.1)
-                        self.driver.find_element(
-                            By.XPATH, '//*[@id="topTitleNew"]/tbody/tr/td/input[1]'
-                        ).click()
-                        actions.perform()  # 执行点击动作
+            while True:
+                try:
+                    # 等待元素可见
+                    self.driver.implicitly_wait(0.1)
+                    self.driver.find_element(
+                        By.XPATH, '//*[@id="topTitleNew"]/tbody/tr/td/input[1]'
+                    ).click()
+                    actions.perform()  # 执行点击动作
 
-                    except:
-                        pass
-                    finally:
-                        if self.driver.current_url != self.url:
-                            break
-            else:
-                # 旧的点击方法
-                while True:
-                    try:
-                        # 等待元素可见
-                        self.driver.implicitly_wait(1)
-                        self.driver.find_element(
-                            By.XPATH, '//*[@id="topTitleNew"]/tbody/tr/td/input[1]'
-                        ).click()
-                        # actions.perform()   # 执行点击动作
-                        self.driver.execute_script("window.alert = function() {};")
+                except Exception as e:
+                    pass
+                finally:
+                    if self.driver.current_url != self.url:
+                        break
 
-                    except:
-                        # 如果没有弹窗，就什么都不做
-                        pass
-                    finally:
-                        if self.driver.current_url != self.url:
-                            break
         else:
             # driver.find_element(By.XPATH, '//*[@id="topTitleNew"]/tbody/tr/td/input[2]').click()
             while True:
@@ -419,7 +434,7 @@ class AppointmentPage(QThread):
                     break
 
         if self.timeerror:
-            self.driver.implicitly_wait(1)
+            self.driver.implicitly_wait(0.1)
             # 切换窗口，将窗口聚焦到最新打开的窗口上，使用方法switch_to.window(),参数为窗口的句柄,driver.window_handles[-1]表示最新打开的窗口
             self.driver.switch_to.window(self.driver.window_handles[-1])
             self.driver.switch_to.frame("bodyiframe")  # 切换frame，

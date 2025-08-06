@@ -1,6 +1,8 @@
-import os, sys
-from PyQt5.QtWidgets import QApplication, QWidget, QListWidgetItem
+import os
+import sys
+
 from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QWidget, QListWidgetItem
 
 # 获取当前脚本所在的目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +46,8 @@ class LogWindow(QWidget, Ui_Form):
             \n2.使用alert消除弹窗",
         )
         self.addLog("V2.7.4", "2024-01-09", "新增功能", "\n1.增加log日志文件，自动保存软件崩溃日志")
+        self.addLog("V2.8", "2024-09-26", "修复UI；增加更新WebDriver功能", "\n1.修改UI在小尺寸屏幕上的字体显示问题\n2.增加更新WebDriver功能。")
+        self.addLog("V3.0", "2024-10-24","新增获取服务器时间功能","新增获取服务器时间功能")
 
         self.setWindowTitle("版本更新日志")
 

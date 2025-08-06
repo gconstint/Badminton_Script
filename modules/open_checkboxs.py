@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QCheckBox, QTimeEdit
-from PyQt5.QtCore import QTime
-import os, sys
+import os
+import sys
 
+from PyQt5.QtCore import QTime
+from PyQt5.QtWidgets import QApplication, QWidget, QCheckBox, QTimeEdit
+from PyQt5.QtCore import QSettings
 # 获取当前脚本所在的目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -10,7 +12,7 @@ src_dir = os.path.dirname(current_dir)
 
 # 将src目录添加到Python路径中
 sys.path.append(src_dir)
-from PyQt5.QtCore import QSettings
+
 
 try:
     from ui_source.bug_list import Ui_Form

@@ -1,0 +1,129 @@
+2024-09-25 20:05:46,061 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 425, in update_webdriver
+    os.rename('chromedriver.exe', '../chromedriver.exe')
+FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'chromedriver.exe' -> '../chromedriver.exe'
+2024-09-25 20:10:15,390 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 425, in update_webdriver
+    os.rename('chromedriver.exe', '../chromedriver.exe')
+FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'chromedriver.exe' -> '../chromedriver.exe'
+2024-09-25 20:12:45,536 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 427, in update_webdriver
+    os.rename('chromedriver.exe', '../chromedriver.exe')
+FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'chromedriver.exe' -> '../chromedriver.exe'
+2024-09-25 20:13:58,317 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 425, in update_webdriver
+    os.rename('chromedriver.exe', '..\chromedriver.exe')
+FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'chromedriver.exe' -> '..\\chromedriver.exe'
+2024-09-25 20:15:26,331 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 425, in update_webdriver
+    os.rename('chromedriver.exe', '..\\chromedriver.exe')
+FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'chromedriver.exe' -> '..\\chromedriver.exe'
+2024-09-25 20:17:29,973 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 425, in update_webdriver
+    shutil.rename('chromedriver.exe', '..\\chromedriver.exe')
+AttributeError: module 'shutil' has no attribute 'rename'
+2024-09-26 09:53:34,193 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "script_final_beta.py", line 396, in update_webdriver
+    pprint("version: " + version_num)
+  File "pprint.py", line 53, in pprint
+  File "pprint.py", line 139, in pprint
+  File "pprint.py", line 176, in _format
+AttributeError: 'NoneType' object has no attribute 'write'
+2024-09-26 09:59:14,321 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "script_final_beta.py", line 396, in update_webdriver
+    pprint("version: " + version_num)
+  File "pprint.py", line 53, in pprint
+  File "pprint.py", line 139, in pprint
+  File "pprint.py", line 176, in _format
+AttributeError: 'NoneType' object has no attribute 'write'
+2024-09-26 09:59:16,333 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "script_final_beta.py", line 396, in update_webdriver
+    pprint("version: " + version_num)
+  File "pprint.py", line 53, in pprint
+  File "pprint.py", line 139, in pprint
+  File "pprint.py", line 176, in _format
+AttributeError: 'NoneType' object has no attribute 'write'
+2024-09-26 09:59:52,545 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "script_final_beta.py", line 396, in update_webdriver
+    pprint("version: " + version_num)
+  File "pprint.py", line 53, in pprint
+  File "pprint.py", line 139, in pprint
+  File "pprint.py", line 176, in _format
+AttributeError: 'NoneType' object has no attribute 'write'
+2024-10-21 09:49:55,808 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:32,438 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:38,037 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:46,250 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:46,663 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:46,837 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:46,982 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:50:47,134 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-21 09:53:20,101 - __main__ - ERROR - Uncaught exception
+TypeError: sync_time() missing 1 required positional argument: 'self'
+2024-10-21 09:54:28,677 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 616, in set_target_time
+    self.sync_time()
+TypeError: sync_time() missing 1 required positional argument: 'self'
+2024-10-21 09:54:43,426 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 616, in set_target_time
+    self.sync_time()
+TypeError: sync_time() missing 1 required positional argument: 'self'
+2024-10-23 14:50:30,587 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-24 11:33:17,298 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'
+2024-10-24 11:33:20,276 - __main__ - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "D:\python_pycharm\Badminton_Script\script_final_beta.py", line 598, in set_target_time
+    self.timer.timeout.connect(
+TypeError: argument 1 has unexpected type 'list'

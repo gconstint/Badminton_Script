@@ -1,0 +1,11 @@
+modules/__pycache__
+
+
+output/error.log
+.idea
+
+__pycache__
+*/__pycache__
+*/*.exe
+*.exe
+
