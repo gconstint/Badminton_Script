@@ -1,0 +1,135 @@
+name: Manual Build EXE
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+        - release
+        - debug
+        - both
+      include_chromedriver:
+        description: 'Include ChromeDriver'
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Download ChromeDriver
+      if: ${{ github.event.inputs.include_chromedriver == 'true' }}
+      run: |
+        # Ensure test directory exists
+        if (!(Test-Path "test")) { 
+          New-Item -ItemType Directory -Path "test" 
+        }
+        
+        # Download ChromeDriver
+        $version = "129.0.6668.70"
+        $url = "https://storage.googleapis.com/chrome-for-testing-public/$version/win32/chromedriver-win32.zip"
+        
+        try {
+          Invoke-WebRequest -Uri $url -OutFile "chromedriver.zip"
+          Expand-Archive -Path "chromedriver.zip" -DestinationPath "temp" -Force
+          Move-Item "temp/chromedriver-win32/chromedriver.exe" "test/chromedriver.exe" -Force
+          Remove-Item "chromedriver.zip", "temp" -Recurse -Force
+          Write-Host "ChromeDriver downloaded successfully"
+        } catch {
+          Write-Host "Failed to download ChromeDriver: $_"
+        }
+        
+    - name: Build Release Version
+      if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' }}
+      run: |
+        pyinstaller badminton.spec
+        
+        # Create release package
+        New-Item -ItemType Directory -Path "package" -Force
+        Copy-Item "dist/BadmintonScript.exe" "package/"
+        
+        if (Test-Path "test/chromedriver.exe") {
+          Copy-Item "test/chromedriver.exe" "package/"
+        }
+        
+        # Create user guide
+        @"
+        # 羽毛球场地预约工具 v3.0
+        
+        ## 快速开始
+        1. 双击运行 BadmintonScript.exe
+        2. 在界面中填入你的学号和密码
+        3. 选择预约日期和时间
+        4. 填写联系人信息
+        5. 点击"启动"开始自动预约
+        
+        ## 配置说明
+        - 学号: 你的上科大学号
+        - 密码: 你的OA系统密码
+        - 使用日期: 要预约的日期
+        - 使用场地: 选择时间段
+        - 现场责任人: 填写联系人姓名
+        - 联系电话: 填写联系人电话
+        
+        ## 注意事项
+        - 请确保电脑已安装Chrome浏览器
+        - 建议在预约开放前1-2分钟启动程序
+        - 程序会在设定时间自动提交预约申请
+        - 支持多线程并发提高成功率
+        
+        ## 故障排除
+        - 如果提示ChromeDriver错误，请确保chromedriver.exe在同一目录
+        - 如果登录失败，请检查学号密码是否正确
+        - 如果预约失败，可能是网络问题或场地已满
+        "@ | Out-File -FilePath "package/使用说明.txt" -Encoding UTF8
+        
+        Compress-Archive -Path "package/*" -DestinationPath "BadmintonScript-Release.zip"
+        
+    - name: Build Debug Version
+      if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' }}
+      run: |
+        pyinstaller --onefile --console --icon=icons/badminton_ico.ico --name="BadmintonScript-Debug" script_final_beta.py
+        
+        New-Item -ItemType Directory -Path "debug-package" -Force
+        Copy-Item "dist/BadmintonScript-Debug.exe" "debug-package/"
+        
+        if (Test-Path "test/chromedriver.exe") {
+          Copy-Item "test/chromedriver.exe" "debug-package/"
+        }
+        
+        Compress-Archive -Path "debug-package/*" -DestinationPath "BadmintonScript-Debug.zip"
+        
+    - name: Upload Release Build
+      if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: BadmintonScript-Release
+        path: BadmintonScript-Release.zip
+        retention-days: 30
+        
+    - name: Upload Debug Build
+      if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: BadmintonScript-Debug
+        path: BadmintonScript-Debug.zip
+        retention-days: 7

@@ -1,0 +1,169 @@
+name: Build Executable
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install PyQt5
+        pip install selenium
+        pip install requests
+        # Install other dependencies if requirements.txt exists
+        if (Test-Path requirements.txt) { pip install -r requirements.txt }
+        
+    - name: Download ChromeDriver
+      run: |
+        # Create test directory if it doesn't exist
+        if (!(Test-Path "test")) { New-Item -ItemType Directory -Path "test" }
+        
+        # Download latest ChromeDriver
+        $chromeVersion = (Get-ItemProperty "HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" -Name "DisplayVersion" -ErrorAction SilentlyContinue).DisplayVersion
+        if (!$chromeVersion) {
+          $chromeVersion = "129.0.6668.70"  # Fallback version
+        }
+        
+        $majorVersion = $chromeVersion.Split('.')[0]
+        $downloadUrl = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$majorVersion"
+        
+        try {
+          $latestVersion = Invoke-RestMethod -Uri $downloadUrl
+          $driverUrl = "https://chromedriver.storage.googleapis.com/$latestVersion/chromedriver_win32.zip"
+          
+          Invoke-WebRequest -Uri $driverUrl -OutFile "chromedriver.zip"
+          Expand-Archive -Path "chromedriver.zip" -DestinationPath "." -Force
+          Move-Item "chromedriver.exe" "test/chromedriver.exe" -Force
+          Remove-Item "chromedriver.zip"
+        } catch {
+          Write-Host "Failed to download ChromeDriver, using fallback"
+          # You might want to include a fallback chromedriver.exe in your repo
+        }
+        
+    - name: Build executable with PyInstaller
+      run: |
+        # Build the main application
+        pyinstaller --onefile --windowed --icon=icons/badminton_ico.ico --name="BadmintonScript" script_final_beta.py
+        
+        # Copy necessary files to dist folder
+        Copy-Item "congfig.txt" "dist/" -ErrorAction SilentlyContinue
+        Copy-Item "test/chromedriver.exe" "dist/" -ErrorAction SilentlyContinue
+        Copy-Item "icons" "dist/" -Recurse -ErrorAction SilentlyContinue
+        Copy-Item "pics" "dist/" -Recurse -ErrorAction SilentlyContinue
+        
+    - name: Create release package
+      run: |
+        # Create a release folder
+        New-Item -ItemType Directory -Path "release" -Force
+        
+        # Copy executable and required files
+        Copy-Item "dist/BadmintonScript.exe" "release/"
+        Copy-Item "congfig.txt" "release/" -ErrorAction SilentlyContinue
+        Copy-Item "test/chromedriver.exe" "release/" -ErrorAction SilentlyContinue
+        Copy-Item "icons" "release/" -Recurse -ErrorAction SilentlyContinue
+        Copy-Item "pics" "release/" -Recurse -ErrorAction SilentlyContinue
+        
+        # Create README for release
+        @"
+        # Badminton Script v3.0
+        
+        ## 使用说明
+        1. 运行 BadmintonScript.exe
+        2. 配置你的账号信息和预约设置
+        3. 点击启动开始自动预约
+        
+        ## 文件说明
+        - BadmintonScript.exe: 主程序
+        - chromedriver.exe: Chrome浏览器驱动
+        - congfig.txt: 配置文件模板
+        - icons/: 图标文件
+        - pics/: 图片资源
+        
+        ## 注意事项
+        - 确保系统已安装Chrome浏览器
+        - 首次运行前请修改congfig.txt中的配置信息
+        - 建议在预约开放前几分钟启动程序
+        "@ | Out-File -FilePath "release/README.md" -Encoding UTF8
+        
+    - name: Create ZIP archive
+      run: |
+        Compress-Archive -Path "release/*" -DestinationPath "BadmintonScript-Windows.zip"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: BadmintonScript-Windows
+        path: BadmintonScript-Windows.zip
+        retention-days: 30
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: BadmintonScript-Windows.zip
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-alternative:
+    runs-on: windows-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller PyQt5 selenium requests
+        
+    - name: Build with different options
+      run: |
+        # Build console version for debugging
+        pyinstaller --onefile --console --icon=icons/badminton_ico.ico --name="BadmintonScript-Console" script_final_beta.py
+        
+        # Build directory version (not single file)
+        pyinstaller --windowed --icon=icons/badminton_ico.ico --name="BadmintonScript-Dir" script_final_beta.py
+        
+    - name: Upload alternative builds
+      uses: actions/upload-artifact@v3
+      with:
+        name: BadmintonScript-Alternative-Builds
+        path: |
+          dist/BadmintonScript-Console.exe
+          dist/BadmintonScript-Dir/
+        retention-days: 7
