@@ -36,31 +36,50 @@ jobs:
         # Install other dependencies if requirements.txt exists
         if (Test-Path requirements.txt) { pip install -r requirements.txt }
         
-    - name: Download ChromeDriver
+    - name: Download Latest ChromeDriver
       run: |
         # Create test directory if it doesn't exist
         if (!(Test-Path "test")) { New-Item -ItemType Directory -Path "test" }
-        
-        # Download latest ChromeDriver
-        $chromeVersion = (Get-ItemProperty "HKLM:SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" -Name "DisplayVersion" -ErrorAction SilentlyContinue).DisplayVersion
-        if (!$chromeVersion) {
-          $chromeVersion = "129.0.6668.70"  # Fallback version
-        }
-        
-        $majorVersion = $chromeVersion.Split('.')[0]
-        $downloadUrl = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$majorVersion"
-        
+
         try {
-          $latestVersion = Invoke-RestMethod -Uri $downloadUrl
-          $driverUrl = "https://chromedriver.storage.googleapis.com/$latestVersion/chromedriver_win32.zip"
-          
+          # Get the latest stable Chrome version from the Chrome for Testing API
+          Write-Host "🔍 Fetching latest Chrome version..."
+          $chromeVersionsUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json"
+          $versionInfo = Invoke-RestMethod -Uri $chromeVersionsUrl
+          $latestVersion = $versionInfo.channels.Stable.version
+
+          Write-Host "📦 Latest Chrome version: $latestVersion"
+
+          # Download ChromeDriver for the latest version
+          $driverUrl = "https://storage.googleapis.com/chrome-for-testing-public/$latestVersion/win32/chromedriver-win32.zip"
+          Write-Host "⬇️ Downloading ChromeDriver from: $driverUrl"
+
           Invoke-WebRequest -Uri $driverUrl -OutFile "chromedriver.zip"
-          Expand-Archive -Path "chromedriver.zip" -DestinationPath "." -Force
-          Move-Item "chromedriver.exe" "test/chromedriver.exe" -Force
-          Remove-Item "chromedriver.zip"
+          Expand-Archive -Path "chromedriver.zip" -DestinationPath "temp" -Force
+          Move-Item "temp/chromedriver-win32/chromedriver.exe" "test/chromedriver.exe" -Force
+          Remove-Item "chromedriver.zip", "temp" -Recurse -Force
+
+          Write-Host "✅ ChromeDriver downloaded successfully: $latestVersion"
+
         } catch {
-          Write-Host "Failed to download ChromeDriver, using fallback"
-          # You might want to include a fallback chromedriver.exe in your repo
+          Write-Host "❌ Failed to download latest ChromeDriver: $_"
+          Write-Host "🔄 Trying fallback method..."
+
+          # Fallback: try a known stable version
+          $fallbackVersion = "131.0.6778.87"
+          $fallbackUrl = "https://storage.googleapis.com/chrome-for-testing-public/$fallbackVersion/win32/chromedriver-win32.zip"
+
+          try {
+            Write-Host "⬇️ Downloading fallback ChromeDriver: $fallbackVersion"
+            Invoke-WebRequest -Uri $fallbackUrl -OutFile "chromedriver.zip"
+            Expand-Archive -Path "chromedriver.zip" -DestinationPath "temp" -Force
+            Move-Item "temp/chromedriver-win32/chromedriver.exe" "test/chromedriver.exe" -Force
+            Remove-Item "chromedriver.zip", "temp" -Recurse -Force
+            Write-Host "✅ Fallback ChromeDriver downloaded successfully"
+          } catch {
+            Write-Host "❌ Fallback download also failed: $_"
+            Write-Host "⚠️ Build will continue without ChromeDriver"
+          }
         }
         
     - name: Build executable with PyInstaller

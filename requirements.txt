@@ -1,4 +1,6 @@
 PyQt5==5.15.10
+PyQtWebEngine==5.15.6
 selenium==4.15.2
 requests==2.31.0
+pytz==2023.3
 pyinstaller==6.1.0
