@@ -1,15 +1,12 @@
-name: Build Executable
+name: Build and Release
 
 on:
   push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
-  pull_request:
-    branches: [ main, master ]
+    tags: [ 'v*' ]  # 只在推送标签时触发发布
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  release-build:
     runs-on: windows-latest
     
     steps:
