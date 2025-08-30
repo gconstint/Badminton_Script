@@ -116,7 +116,7 @@ jobs:
         Compress-Archive -Path "release/*" -DestinationPath "BadmintonScript-Windows.zip"
         
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: BadmintonScript-Windows
         path: BadmintonScript-Windows.zip
@@ -160,7 +160,7 @@ jobs:
         pyinstaller --windowed --icon=icons/badminton_ico.ico --name="BadmintonScript-Dir" script_final_beta.py
         
     - name: Upload alternative builds
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: BadmintonScript-Alternative-Builds
         path: |
