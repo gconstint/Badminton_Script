@@ -11,7 +11,6 @@ a = Analysis(
         ('modules/*.py', 'modules'),
         ('icons/*', 'icons'),
         ('pics/*', 'pics'),
-        ('congfig.txt', '.'),
     ],
     hiddenimports=[
         'PyQt5.QtCore',

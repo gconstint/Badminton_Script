@@ -80,12 +80,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.webdriver_version = "129.0.6668.70"
 
     def init_size(self):
-        # 获取屏幕的几何信息
-        screen_geometry = QCoreApplication.instance().desktop().availableGeometry()
-
         # 设置窗口的大小为屏幕的80%
-        width = int(screen_geometry.width() * 0.2)
-        height = int(screen_geometry.height() * 0.6)
+        width = int(80)
+        height = int(160)
         self.resize(width, height)
 
     # def show_time(self):
