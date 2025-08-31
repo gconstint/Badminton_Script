@@ -9,8 +9,8 @@
 """
 # 使用非pydm环境进行打包,本次使用非conda环境进行打包
 from email.policy import default
-from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 import os
 import sys
 
@@ -30,12 +30,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from concurrent.futures import ThreadPoolExecutor
-from PyQt5.QtCore import pyqtSlot, QSettings
+from PyQt6.QtCore import pyqtSlot, QSettings
 from datetime import datetime
-from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtCore import QTimer, QTime
-from PyQt5.QtCore import QCoreApplication, QRect
-# from PyQt5.uic import loadUi
+from PyQt6.QtCore import Qt, QDate
+from PyQt6.QtCore import QTimer, QTime
+from PyQt6.QtCore import QCoreApplication, QRect
+# from PyQt6.uic import loadUi
 from ui_source.ui_definition2 import Ui_Form
 import time
 from selenium.webdriver import ActionChains
@@ -397,7 +397,7 @@ class MainWindow(QMainWindow, Ui_Form):
         self.setupUi(self)  # 调用Ui_Form类的setupUi方法，传入self参数，self表示当前的窗口
 
         # 创建一个窗口部件，并将布局设置为其主要布局
-        # from PyQt5.QtWidgets import QWidget
+        # from PyQt6.QtWidgets import QWidget
         # widget = QWidget()
         # widget.setLayout(self.frame)
         # 将窗口部件设置为主窗口的中央部件

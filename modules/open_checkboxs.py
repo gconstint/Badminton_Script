@@ -1,9 +1,9 @@
 import os
 import sys
 
-from PyQt5.QtCore import QTime
-from PyQt5.QtWidgets import QApplication, QWidget, QCheckBox, QTimeEdit
-from PyQt5.QtCore import QSettings
+from PyQt6.QtCore import QTime
+from PyQt6.QtWidgets import QApplication, QWidget, QCheckBox, QTimeEdit
+from PyQt6.QtCore import QSettings
 # 获取当前脚本所在的目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
 

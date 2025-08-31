@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 
 import requests
-from PyQt5.QtCore import QThread, pyqtSignal, QTime
+from PyQt6.QtCore import QThread, pyqtSignal, QTime
 from pytz import timezone, utc
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -44,7 +44,19 @@ class AppointmentPage(QThread):
         self.account = parent.lineEdit.text()
         self.password = parent.lineEdit_2.text()
 
-        self.field_type = 3 # 1表示羽毛球场地， 3表示网球场地
+        self.field_type = 1  # 1表示羽毛球场地， 3表示网球场地
+        if parent.comboBox_6.currentText() == "羽毛球场":
+            self.field_type = 1
+        elif parent.comboBox_6.currentText() == "乒乓球场":
+            self.field_type = 2
+        elif parent.comboBox_6.currentText() == "网球场":
+            self.field_type = 3
+        elif parent.comboBox_6.currentText() == "匹克球场":
+            self.field_type = 4
+        elif parent.comboBox_6.currentText() == "XX场1":
+            self.field_type = 5
+        elif parent.comboBox_6.currentText() == "XX场2":
+            self.field_type = 6
 
         self.date = parent.dateEdit.text()
 

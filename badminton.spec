@@ -13,9 +13,9 @@ a = Analysis(
         ('pics/*', 'pics'),
     ],
     hiddenimports=[
-        'PyQt5.QtCore',
-        'PyQt5.QtWidgets', 
-        'PyQt5.QtGui',
+        'PyQt6.QtCore',
+        'PyQt6.QtWidgets',
+        'PyQt6.QtGui',
         'selenium.webdriver.chrome.service',
         'selenium.webdriver.common.by',
         'selenium.webdriver.support.ui',

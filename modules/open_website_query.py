@@ -1,6 +1,6 @@
 
 
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QApplication, QWidget
 import os,sys
 # 获取当前脚本所在的目录
 current_dir = os.path.dirname(os.path.abspath(__file__))

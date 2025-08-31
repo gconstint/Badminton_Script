@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+import warnings
+# 抑制PyQt6的sipPyTypeDict deprecation warning
+warnings.filterwarnings("ignore", message="sipPyTypeDict.*deprecated", category=DeprecationWarning)
+
 import logging
 # from pprint import pprint
 import os
@@ -10,8 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import requests
-from PyQt5.QtCore import QCoreApplication, QDate, QSettings, QTimer, QTime, Qt, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PyQt6.QtCore import QCoreApplication, QDate, QSettings, QTimer, QTime, Qt, pyqtSlot
+from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -80,9 +84,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.webdriver_version = "129.0.6668.70"
 
     def init_size(self):
-        # 设置窗口的大小为屏幕的80%
-        width = int(80)
-        height = int(160)
+        # 方案2: 固定合适的尺寸 (可选择使用)
+        width = 420
+        height = 740
+        # 设置窗口大小
         self.resize(width, height)
 
     # def show_time(self):
@@ -143,6 +148,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setting1.setValue('hide_web1', self.checkBox_1.isChecked())
 
+        self.setting1.setValue('court_type1',self.comboBox_3.currentText())
+
     def save_default_settings_2(self):
         # 将默认值保存到设置中
         # settings2 = QSettings('MyCompany', 'MyApp')
@@ -170,6 +177,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setting2.setValue("webdriver_version", self.webdriver_version)
         self.setting2.setValue('hide_web12', self.checkBox_1.isChecked())
+
+        self.setting2.setValue('court_type2',self.comboBox_3.currentText())
 
     def save_default_settings(self):
         if self.comboBox.currentText() == "1":
@@ -223,6 +232,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # self.checkBox_2.setChecked(default_check)
 
+        self.comboBox_3.setCurrentText(self.setting1.value('court_type1', ""))
+
     def apply_default_settings_2(self):
         # 加载默认设置2
         # settings2 = QSettings('MyCompany', 'MyApp')
@@ -269,12 +280,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # self.checkBox_2.setChecked(default_check2)
 
+        self.comboBox_3.setCurrentText(self.setting2.value('court_type2', ""))
+
     def show_saved_message(self):
         # 显示保存成功的消息
         self.msg.setIcon(QMessageBox.Information)
         self.msg.setWindowTitle("information")
         self.msg.setText("默认设置已保存")
-        self.msg.exec_()
+        self.msg.exec()
 
     # 判断浏览器类型
     def judge_brower(self):
@@ -404,7 +417,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
 
             # 如果点击ok
-            if self.msg.exec_() == QMessageBox.Ok:
+            if self.msg.exec() == QMessageBox.Ok:
 
                 # 设置自定义请求头（可选）
                 headers = {
@@ -441,14 +454,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.msg.setWindowTitle("information")
                     self.msg.setText("webdriver更新成功！\n当前浏览器driver版本为: " + self.webdriver_version)
                     self.msg.setStandardButtons(QMessageBox.Ok)
-                    self.msg.exec_()
+                    self.msg.exec()
                 else:
                     # print("下载chromedriver.zip 失败")
                     self.msg.setIcon(QMessageBox.Information)
                     self.msg.setWindowTitle("information")
                     self.msg.setText(f"下载失败，状态码: {response.status_code}")
                     self.msg.setStandardButtons(QMessageBox.Ok)
-                    self.msg.exec_()
+                    self.msg.exec()
         else:
             self.msg.setIcon(QMessageBox.Information)
             self.msg.setWindowTitle("information")
@@ -661,4 +674,4 @@ if __name__ == "__main__":
     window = MainWindow()
     sys.excepthook = window.handle_exception
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
