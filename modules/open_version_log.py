@@ -12,6 +12,8 @@ src_dir = os.path.dirname(current_dir)
 sys.path.append(src_dir)
 
 from ui_source.version_log import Ui_Form
+from modules.version_manager import get_app_version
+import version_config
 
 
 class LogWindow(QWidget, Ui_Form):
@@ -49,7 +51,15 @@ class LogWindow(QWidget, Ui_Form):
         self.addLog("V2.8", "2024-09-26", "修复UI；增加更新WebDriver功能", "\n1.修改UI在小尺寸屏幕上的字体显示问题\n2.增加更新WebDriver功能。")
         self.addLog("V3.0", "2024-10-24","新增获取服务器时间功能","新增获取服务器时间功能")
 
-        self.setWindowTitle("版本更新日志")
+        # 获取当前版本并添加到日志顶部
+        current_version = get_app_version(
+            repo_owner=version_config.GITHUB_REPO_OWNER,
+            repo_name=version_config.GITHUB_REPO_NAME
+        )
+        self.addLog(f"V{current_version}", "当前版本", "版本号自动同步", "\n1.版本号现在自动与GitHub tag同步\n2.支持从本地Git和GitHub API获取版本信息")
+
+        # 动态设置窗口标题，显示当前版本
+        self.setWindowTitle(f"版本更新日志 - 当前版本: V{current_version}")
 
     def addLog(self, version, update_time, main_log, all_log):
         # 在日志组件中添加一条日志

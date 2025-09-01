@@ -1156,8 +1156,8 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>10000</width>
-        <height>10000</height>
+        <width>16777215</width>
+        <height>16777215</height>
        </size>
       </property>
       <property name="layoutDirection">
@@ -1780,7 +1780,7 @@
      <x>0</x>
      <y>0</y>
      <width>419</width>
-     <height>37</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOpen">

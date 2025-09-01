@@ -24,8 +24,10 @@ from selenium.webdriver.common.keys import Keys
 from modules.Appointment_thread import AppointmentPage
 from modules.open_checkboxs import CheckBoxWindow
 from modules.open_version_log import LogWindow
+from modules.version_manager import get_app_version
 # from modules.time_sync import sync_windows_time
 from ui_source.badminton_window import Ui_MainWindow
+import version_config
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -34,7 +36,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     ):  # 标准的__init__方法，parent=None表示没有父类，args=None表示没有参数，macros=None表示没有宏
         super().__init__()  # 调用父类的__init__方法，super(MyDisplay, self)表示调用父类的__init__方法，parent=parent, args=args, macros=macros表示传入参数
         self.setupUi(self)
-        self.setWindowTitle("Badminton Beta V3.0")
+
+        # 动态获取版本号并设置窗口标题
+        app_version = get_app_version(
+            repo_owner=version_config.GITHUB_REPO_OWNER,
+            repo_name=version_config.GITHUB_REPO_NAME
+        )
+        self.setWindowTitle(f"{version_config.APP_NAME} V{app_version}")
         self.init_size()
         self.log_init()
 
